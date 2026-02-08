@@ -7,11 +7,13 @@ It will display the current time and date.
 
 import configparser
 import os
+import threading
 import tkinter as tk
-from tkinter import ttk
+from tkinter import messagebox, ttk
 
 from .imports import Clock, Console, Loading, MainMenu, Options
 from .assets.lib.lang.translator import set_language, t
+from .data.update_checker import UpdateResult, check_for_updates
 
 
 def _init_translations() -> None:
@@ -54,6 +56,7 @@ class ClockApp(tk.Tk):
         self._console_visible = False
         self._console_expanded = False
         self.current_menu: str = ""
+        self._update_check_scheduled: str | None = None
         self.loading = Loading(self)
         self.loading.grid(row=0, column=0, sticky="nsew")
         self.current_menu = "loading"
@@ -91,6 +94,7 @@ class ClockApp(tk.Tk):
         self.loading.grid_forget()
         self.switch_menu("main")
         self._setup_console()
+        self._schedule_auto_update()
 
     def _setup_console(self) -> None:
         """Create console and bind ~ / ` to toggle."""
@@ -163,6 +167,98 @@ class ClockApp(tk.Tk):
             self._console_expanded = False
             self.grid_rowconfigure(1, weight=0)
             self.console.grid_forget()
+
+    def check_for_updates_async(
+        self, show_no_update: bool = False, is_manual: bool = False
+    ) -> None:
+        """Run update check in a background thread. Callback shows popup if update found."""
+        def _run() -> None:
+            result = check_for_updates()
+            self.after(0, lambda: self._on_update_check_result(
+                result, show_no_update=show_no_update, is_manual=is_manual
+            ))
+        threading.Thread(target=_run, daemon=True).start()
+
+    def _on_update_check_result(
+        self,
+        result: UpdateResult,
+        show_no_update: bool = False,
+        is_manual: bool = False,
+    ) -> None:
+        """Handle update check result on main thread. Show popup if appropriate."""
+        if result.error:
+            messagebox.showwarning(
+                t("update.error_title", "Update Check"),
+                t("update.error_message", "Could not check for updates: {error}", error=result.error),
+            )
+            return
+        # Only show update popup if notifications are on, or if manual check
+        notifications_on = self._notifications_enabled()
+        if result.has_update and (is_manual or notifications_on):
+            msg = t(
+                "update.available_message",
+                "A new version {latest} is available.\n\n{notes}\n\nOpen download page?",
+            )
+            notes = (result.release_notes or "")[:500]
+            if len((result.release_notes or "")) > 500:
+                notes += "..."
+            if notes:
+                notes = notes.replace("\r\n", "\n").strip() + "\n\n"
+            else:
+                notes = ""
+            body = msg.format(latest=result.latest_version, notes=notes)
+            if messagebox.askyesno(t("update.available_title", "Update Available"), body):
+                import webbrowser
+                webbrowser.open(result.release_url)
+        elif show_no_update:
+            messagebox.showinfo(
+                t("update.up_to_date_title", "Up to Date"),
+                t("update.up_to_date_message", "You have the latest version ({version}).", version=result.current_version),
+            )
+
+    def _schedule_auto_update(self) -> None:
+        """Schedule automatic update check if configured."""
+        config = self._load_update_config()
+        if (config.get("update_option") or "").strip().lower() != "automatic":
+            return
+        if (config.get("source") or "").strip().lower() != "github":
+            return
+        # First check after 30 seconds; then reschedule based on frequency
+        self._update_check_scheduled = self.after(30_000, self._do_auto_update)
+
+    def _do_auto_update(self) -> None:
+        """Run automatic update check and reschedule."""
+        self._update_check_scheduled = None
+        self.check_for_updates_async(show_no_update=False)
+        config = self._load_update_config()
+        if (config.get("update_option") or "").strip().lower() != "automatic":
+            return
+        ms = {"Daily": 86400_000, "Weekly": 604_800_000, "Monthly": 2_592_000_000}.get(
+            (config.get("frequency") or "Daily").strip(), 86400_000
+        )
+        self._update_check_scheduled = self.after(ms, self._do_auto_update)
+
+    def _notifications_enabled(self) -> bool:
+        """Return True if app notifications are enabled in config."""
+        from .imports import CLOCK_APP_INI_PATH
+        if not os.path.exists(CLOCK_APP_INI_PATH):
+            return True
+        cfg = configparser.ConfigParser()
+        cfg.optionxform = str
+        cfg.read(CLOCK_APP_INI_PATH, encoding="utf-8")
+        for sect in ["-S- Notifications"]:
+            if not cfg.has_section(sect):
+                continue
+            for key in cfg.options(sect):
+                if "app_notification_option" in key:
+                    val = cfg.get(sect, key).strip().lower()
+                    return val in ("true", "1", "yes", "on")
+        return True
+
+    def _load_update_config(self) -> dict:
+        """Load update-related config from ini."""
+        from .data.update_checker import _load_update_config
+        return _load_update_config()
 
     def refresh_translations(self) -> None:
         """Reload translated text across the app after language change."""

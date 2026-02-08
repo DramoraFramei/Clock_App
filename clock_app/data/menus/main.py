@@ -24,7 +24,7 @@ class MainMenu(ttk.Frame):
         super().__init__(parent, *args, **kwargs)
         self.parent = parent
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(5, weight=1)
+        self.grid_rowconfigure(6, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.label = ttk.Label(self, text=t("main_menu.label"))
         self.label.grid(row=1, column=0, pady=10)
@@ -34,16 +34,31 @@ class MainMenu(ttk.Frame):
         self.options_button = ttk.Button(
             self, text=t("main_menu.options"), command=self.open_options)
         self.options_button.grid(row=3, column=0, pady=5)
+        self.update_button = ttk.Button(
+            self,
+            text=t("main_menu.check_for_updates", "Check for Updates"),
+            command=self.check_for_updates,
+        )
+        self.update_button.grid(row=4, column=0, pady=5)
         self.exit_button = ttk.Button(
             self, text=t("main_menu.exit"), command=self.parent.quit)
-        self.exit_button.grid(row=4, column=0, pady=5)
+        self.exit_button.grid(row=5, column=0, pady=5)
 
     def refresh_translations(self) -> None:
         """Update labels and buttons with current language."""
         self.label.config(text=t("main_menu.label"))
         self.clock_button.config(text=t("main_menu.clock"))
         self.options_button.config(text=t("main_menu.options"))
+        self.update_button.config(
+            text=t("main_menu.check_for_updates", "Check for Updates")
+        )
         self.exit_button.config(text=t("main_menu.exit"))
+
+    def check_for_updates(self) -> None:
+        """Trigger manual update check."""
+        self.parent.check_for_updates_async(
+            show_no_update=True, is_manual=True
+        )
 
     def open_clock(self) -> None:
         """
