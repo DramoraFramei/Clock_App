@@ -7,7 +7,7 @@ A simple desktop clock application that displays the current time and date. Buil
 - **Version:** 0.0.01 (Pre-Alpha)
 - **Author:** Dramora9879
 - **License:** All Rights Reserved
-- **Repository:** [GitHub - Clock-App](https://github.com/DramoraFramei/Clock-App)
+- **Repository:** [GitHub - Clock-App](https://github.com/DramoraFramei/Clock_App)
 
 ## Features
 
