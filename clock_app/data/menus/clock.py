@@ -168,8 +168,8 @@ class Clock(ttk.Frame):
             self._draw_analog_clock()
 
     def _find_image_path(self, base_name: str) -> str | None:
-        """Return path to image, trying jpg then png."""
-        for ext in (".jpg", ".jpeg", ".png"):
+        """Return path to image, trying tif then jpg then png."""
+        for ext in (".tif", ".tiff", ".jpg", ".jpeg", ".png"):
             path = os.path.join(self._images_folder, base_name + ext)
             if os.path.exists(path):
                 return path
