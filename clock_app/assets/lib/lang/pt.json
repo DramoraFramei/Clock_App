@@ -1,0 +1,18 @@
+{
+  "app.title": "App Relógio",
+  "main_menu.label": "Menu principal",
+  "main_menu.clock": "Relógio",
+  "main_menu.options": "Opções",
+  "main_menu.exit": "Sair",
+  "common.back": "Voltar",
+  "clock.pillow_required": "Pillow necessário para JPG",
+  "loading.text": "Carregando...",
+  "options.title": "Opções",
+  "console.commands_list": "Comandos disponíveis:\n  list_commands\n    Mostrar esta lista de comandos\n\n  clock.{element}.drag&drop = true|false\n    Ativar/desativar arrastar para mostrador, ponteiro horas, minutos, segundos\n\n  clock.analog_animation = true|false\n    Ativar/desativar animação dos ponteiros\n\n  clock.{element}.resize = true|false\n    Modo redimensionar; use =/+ para aumentar, -/_ para diminuir\n\n  clock.{element}.scale = value\n    Definir escala (1.0 = padrão)\n\n  clock.{element}.rotate = degrees\n    Adicionar deslocamento de rotação (graus)\n\n  clock.{element}.pivot = center|bottom|x,y\n    Definir pivot: center, bottom ou razões x,y (0-1)\n\n  Elementos: face, hour_hand, minute_hand, second_hand\n  (Aliases: analog_clock, analog_clock_hour_hand, etc.)",
+  "console.unknown_element": "Elemento desconhecido ou relógio não pronto: {0}",
+  "console.clock_not_ready": "Relógio não pronto",
+  "console.invalid_scale": "Valor de escala inválido",
+  "console.invalid_rotation": "Valor de rotação inválido",
+  "console.invalid_pivot": "Elemento desconhecido ou pivot inválido: {0}",
+  "console.unknown_command": "Comando desconhecido: {0}"
+}

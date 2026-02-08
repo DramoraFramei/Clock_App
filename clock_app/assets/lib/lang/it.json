@@ -1,0 +1,18 @@
+{
+  "app.title": "App Orologio",
+  "main_menu.label": "Menu principale",
+  "main_menu.clock": "Orologio",
+  "main_menu.options": "Opzioni",
+  "main_menu.exit": "Esci",
+  "common.back": "Indietro",
+  "clock.pillow_required": "Pillow richiesto per JPG",
+  "loading.text": "Caricamento...",
+  "options.title": "Opzioni",
+  "console.commands_list": "Comandi disponibili:\n  list_commands\n    Mostra questo elenco di comandi\n\n  clock.{element}.drag&drop = true|false\n    Abilita/disabilita trascinamento per quadrante, lancetta ore, minuti, secondi\n\n  clock.analog_animation = true|false\n    Abilita/disabilita animazione lancette\n\n  clock.{element}.resize = true|false\n    Modalità ridimensionamento; con =/+ aumenta, -/_ diminuisce\n\n  clock.{element}.scale = value\n    Imposta scala (1.0 = predefinito)\n\n  clock.{element}.rotate = degrees\n    Aggiungi offset rotazione (gradi)\n\n  clock.{element}.pivot = center|bottom|x,y\n    Imposta perno: center, bottom o rapporti x,y (0-1)\n\n  Elementi: face, hour_hand, minute_hand, second_hand\n  (Alias: analog_clock, analog_clock_hour_hand, ecc.)",
+  "console.unknown_element": "Elemento sconosciuto o orologio non pronto: {0}",
+  "console.clock_not_ready": "Orologio non pronto",
+  "console.invalid_scale": "Valore scala non valido",
+  "console.invalid_rotation": "Valore rotazione non valido",
+  "console.invalid_pivot": "Elemento sconosciuto o perno non valido: {0}",
+  "console.unknown_command": "Comando sconosciuto: {0}"
+}

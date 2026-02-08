@@ -1,0 +1,18 @@
+{
+  "app.title": "Saat Uygulaması",
+  "main_menu.label": "Ana Menü",
+  "main_menu.clock": "Saat",
+  "main_menu.options": "Seçenekler",
+  "main_menu.exit": "Çıkış",
+  "common.back": "Geri",
+  "clock.pillow_required": "JPG için Pillow gerekli",
+  "loading.text": "Yükleniyor...",
+  "options.title": "Seçenekler",
+  "console.commands_list": "Mevcut komutlar:\n  list_commands\n    Bu komut listesini göster\n\n  clock.{element}.drag&drop = true|false\n    Yüzey, saat, dakika, saniye ibreleri için sürükle-bırak etkinleştir/devre dışı bırak\n\n  clock.analog_animation = true|false\n    Analog saat animasyonunu aç/kapat\n\n  clock.{element}.resize = true|false\n    Boyutlandırma modu; büyütmek için =/+ kullanın, küçültmek için -/_\n\n  clock.{element}.scale = value\n    Ölçeği ayarla (1.0 = varsayılan)\n\n  clock.{element}.rotate = degrees\n    Döndürme ofseti ekle (derece)\n\n  clock.{element}.pivot = center|bottom|x,y\n    Pivot noktası ayarla: center, bottom veya x,y oranları (0-1)\n\n  Öğeler: face, hour_hand, minute_hand, second_hand\n  (Diğer adlar: analog_clock, analog_clock_hour_hand, vb.)",
+  "console.unknown_element": "Bilinmeyen öğe veya saat hazır değil: {0}",
+  "console.clock_not_ready": "Saat hazır değil",
+  "console.invalid_scale": "Geçersiz ölçek değeri",
+  "console.invalid_rotation": "Geçersiz döndürme değeri",
+  "console.invalid_pivot": "Bilinmeyen öğe veya geçersiz pivot: {0}",
+  "console.unknown_command": "Bilinmeyen komut: {0}"
+}

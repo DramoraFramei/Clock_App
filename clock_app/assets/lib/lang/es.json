@@ -1,0 +1,18 @@
+{
+  "app.title": "App Reloj",
+  "main_menu.label": "Menú principal",
+  "main_menu.clock": "Reloj",
+  "main_menu.options": "Opciones",
+  "main_menu.exit": "Salir",
+  "common.back": "Atrás",
+  "clock.pillow_required": "Se requiere Pillow para JPG",
+  "loading.text": "Cargando...",
+  "options.title": "Opciones",
+  "console.commands_list": "Comandos disponibles:\n  list_commands\n    Mostrar esta lista de comandos\n\n  clock.{element}.drag&drop = true|false\n    Activar/desactivar arrastre para esfera, manecilla horas, minutos, segundos\n\n  clock.analog_animation = true|false\n    Activar/desactivar animación de manecillas\n\n  clock.{element}.resize = true|false\n    Modo redimensionar; use =/+ para aumentar, -/_ para disminuir\n\n  clock.{element}.scale = value\n    Establecer escala (1.0 = predeterminado)\n\n  clock.{element}.rotate = degrees\n    Añadir desplazamiento de rotación (grados)\n\n  clock.{element}.pivot = center|bottom|x,y\n    Establecer pivote: center, bottom o razones x,y (0-1)\n\n  Elementos: face, hour_hand, minute_hand, second_hand\n  (Alias: analog_clock, analog_clock_hour_hand, etc.)",
+  "console.unknown_element": "Elemento desconocido o reloj no listo: {0}",
+  "console.clock_not_ready": "Reloj no listo",
+  "console.invalid_scale": "Valor de escala no válido",
+  "console.invalid_rotation": "Valor de rotación no válido",
+  "console.invalid_pivot": "Elemento desconocido o pivote no válido: {0}",
+  "console.unknown_command": "Comando desconocido: {0}"
+}
