@@ -168,8 +168,8 @@ class Clock(ttk.Frame):
             self._draw_analog_clock()
 
     def _find_image_path(self, base_name: str) -> str | None:
-        """Return path to image, trying tif then jpg then png."""
-        for ext in (".tif", ".tiff", ".jpg", ".jpeg", ".png"):
+        """Return path to image; prefer jpg then tif then png for analog assets."""
+        for ext in (".jpg", ".jpeg", ".tif", ".tiff", ".png"):
             path = os.path.join(self._images_folder, base_name + ext)
             if os.path.exists(path):
                 return path
@@ -517,8 +517,12 @@ class Clock(ttk.Frame):
             self._load_analog_assets()
             self._draw_analog_clock()
 
-    def _draw_analog_clock(self) -> None:
-        """Draw analog clock face and hands. Scales to fit canvas; hands pivot at center."""
+    def _draw_analog_clock(self, force_full: bool = True) -> None:
+        """
+        Draw analog clock face and hands. Uses Pillow to rotate hand images;
+        pivot is at bottom-center (circular base) for natural rotation.
+        Rotation: second 6°/sec, minute 6°/min + 0.1°/sec, hour 30°/hr + 0.5°/min.
+        """
         radius, center_x, center_y = self._get_clock_dimensions()
         if not HAS_PIL:
             self._clock_canvas.delete("all")
@@ -528,6 +532,10 @@ class Clock(ttk.Frame):
             )
             return
         if "face" not in self._hand_images or self._hand_images["face"] is None:
+            return
+        # When only time changed, redraw only hands (keeps face, avoids flicker)
+        if not force_full and self._clock_canvas.find_withtag("face"):
+            self._draw_analog_hands_only(radius, center_x, center_y)
             return
         self._clock_canvas.delete("all")
         new_refs: list[Any] = []
@@ -549,13 +557,27 @@ class Clock(ttk.Frame):
         self._clock_canvas.create_image(
             fx, fy, image=face_photo, anchor=tk.CENTER, tags=("face",)
         )
+        self._draw_analog_hands_only(radius, center_x, center_y, new_refs)
+        self._photo_refs[:] = new_refs
 
+    def _draw_analog_hands_only(
+        self,
+        radius: int,
+        center_x: int,
+        center_y: int,
+        refs_list: list[Any] | None = None,
+    ) -> None:
+        """Draw or redraw only the hour/minute/second hands (clear old hands first)."""
+        self._clock_canvas.delete("hands")
+        refs_owned = refs_list is None
+        if refs_owned:
+            refs_list = list(self._photo_refs[:1])
+        # Clock animation angles: 6° per second, 6° per min + 0.1° per sec, 30° per hr + 0.5° per min
         if self._analog_animation_enabled:
             now = datetime.now(self._tz) if self._tz else datetime.now()
             sec = now.second + now.microsecond / 1_000_000
             min_val = now.minute + sec / 60
-            hr = now.hour % 12 + min_val / \
-                60 if self._use_12_hour else (now.hour % 24) + min_val / 60
+            hr = (now.hour % 12) + min_val / 60 if self._use_12_hour else (now.hour % 24) + min_val / 60
             if self._use_12_hour:
                 hr = hr % 12
             sec_angle = sec * 6
@@ -563,20 +585,20 @@ class Clock(ttk.Frame):
             hr_angle = hr * 30 if self._use_12_hour else hr * 15
         else:
             sec_angle = min_angle = hr_angle = 0
-
         for name, angle in [("hour", hr_angle), ("minute", min_angle), ("second", sec_angle)]:
             rot_add = self._element_rotation_override.get(name, 0)
             photo = self._rotated_hand(name, angle + rot_add, radius)
             if photo:
-                new_refs.append(photo)
+                refs_list.append(photo)
                 px, py = center_x, center_y
                 if name in self._element_offsets:
                     dx, dy = self._element_offsets[name]
                     px, py = center_x + dx, center_y + dy
                 self._clock_canvas.create_image(
-                    px, py, image=photo, anchor=tk.CENTER, tags=(name,)
+                    px, py, image=photo, anchor=tk.CENTER, tags=("hands", name)
                 )
-        self._photo_refs[:] = new_refs
+        if refs_owned:
+            self._photo_refs[:] = refs_list
 
     def _update_time(self) -> None:
         """Update displayed time (called every second)."""
@@ -591,5 +613,5 @@ class Clock(ttk.Frame):
             self._time_label.config(text=time_str)
         else:
             if self._analog_animation_enabled:
-                self._draw_analog_clock()
+                self._draw_analog_clock(force_full=False)
         self.after(1000, self._update_time)
