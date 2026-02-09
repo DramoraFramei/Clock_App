@@ -3,3 +3,4 @@
 /.mypy_cache
 /.cspell
 /cspell.json
+/clock_app/data/scripts/tif_image_positions.py

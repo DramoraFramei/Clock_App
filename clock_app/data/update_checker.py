@@ -1,4 +1,5 @@
-# pylint: disable=line-too-long
+# pylint: disable=line-too-long,broad-exception-caught,too-many-return-statements
+# type: ignore[assignment]
 """
 Update checker for Clock App. Uses GitHub Releases API when source is GitHub.
 """
@@ -169,7 +170,8 @@ def check_for_updates() -> UpdateResult:
         ctx = ssl.create_default_context()
         req = urllib.request.Request(
             api_url,
-            headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "Clock-App"},
+            headers={"Accept": "application/vnd.github.v3+json",
+                     "User-Agent": "Clock-App"},
         )
         with urllib.request.urlopen(req, timeout=10, context=ctx) as resp:
             data = resp.read().decode("utf-8")
@@ -215,7 +217,8 @@ def check_for_updates() -> UpdateResult:
                 has_update=True,
                 current_version=current,
                 latest_version=tag_clean or tag,
-                release_url=rel.get("html_url", f"https://github.com/{repo}/releases"),
+                release_url=rel.get(
+                    "html_url", f"https://github.com/{repo}/releases"),
                 release_notes=rel.get("body", "") or "",
                 error=None,
             )
