@@ -76,7 +76,7 @@ def _load_clock_config(ini_path: str) -> dict[str, Any]:
         for key in cfg.options(sect):
             name = key.split(".", 1)[-1] if "." in key else key
             val = cfg.get(sect, key).strip()
-            if name == "app_animation_option":
+            if name in ("app_animation_option", "app_clock_animation"):
                 out["animation"] = val.lower() in ("true", "1", "yes", "on")
             elif name == "app_clock_type":
                 out["clock_type"] = val
@@ -206,8 +206,8 @@ class Clock(ttk.Frame):
 
     def _rotated_hand(
         self, name: str, angle_deg: float, radius: int
-    ) -> ImageTk.PhotoImage | None:
-        """Return rotated, scaled hand. Pivot from config (center, bottom, or custom)."""
+    ) -> tuple[ImageTk.PhotoImage, int, int] | None:
+        """Return (rotated hand photo, pivot_x, pivot_y) in rotated image. Pivot at clock center."""
         img = self._hand_images.get(name)
         if img is None:
             return None
@@ -223,20 +223,29 @@ class Clock(ttk.Frame):
             name, "center"
         )
         if pivot_spec == "bottom":
-            pivot = (new_w // 2, new_h - 1)
+            px, py = new_w // 2, new_h - 1
         elif isinstance(pivot_spec, tuple):
             xr, yr = pivot_spec
-            pivot = (int(new_w * xr), int(new_h * yr))
+            px, py = int(new_w * xr), int(new_h * yr)
         else:
-            pivot = (new_w // 2, new_h // 2)
+            px, py = new_w // 2, new_h // 2
         rotated = scaled.rotate(
             -angle_deg,
             resample=Image.BICUBIC,
             expand=True,
-            center=pivot,
+            center=(px, py),
             fillcolor=(0, 0, 0, 0),
         )
-        return ImageTk.PhotoImage(rotated)
+        # Pivot in rotated image: bbox of rotated corners
+        corners = [(0, 0), (new_w, 0), (new_w, new_h), (0, new_h)]
+        cos_a = math.cos(math.radians(angle_deg))
+        sin_a = math.sin(math.radians(angle_deg))
+        rx = [int((c[0] - px) * cos_a - (c[1] - py) * sin_a + px) for c in corners]
+        ry = [int((c[0] - px) * sin_a + (c[1] - py) * cos_a + py) for c in corners]
+        min_x, min_y = min(rx), min(ry)
+        pivot_out_x = px - min_x
+        pivot_out_y = py - min_y
+        return ImageTk.PhotoImage(rotated), pivot_out_x, pivot_out_y
 
     def _get_hand_transform_info(
         self, name: str, radius: int
@@ -482,6 +491,14 @@ class Clock(ttk.Frame):
         elif not self._use_digital and hasattr(self, "_clock_canvas"):
             self._draw_analog_clock()
 
+    def refresh_theme_colors(self) -> None:
+        """Apply current app theme colors (bg/fg only)."""
+        bg = self._theme_bg()
+        if hasattr(self, "_time_label") and self._time_label.winfo_exists():
+            self._time_label.configure(bg=bg)
+        if hasattr(self, "_clock_canvas") and self._clock_canvas.winfo_exists():
+            self._clock_canvas.configure(bg=bg)
+
     def _destroy_clock_display(self) -> None:
         """Destroy the current clock display widget (analog canvas or digital label)."""
         if hasattr(self, "_clock_canvas") and self._clock_canvas.winfo_exists():
@@ -491,13 +508,19 @@ class Clock(ttk.Frame):
             self._time_label.destroy()
             del self._time_label
 
+    def _theme_bg(self) -> str:
+        """Current theme background (for canvas and digital label)."""
+        if hasattr(self.parent, "get_theme_colors"):
+            return self.parent.get_theme_colors()[0]
+        try:
+            return self.cget("background")
+        except tk.TclError:
+            return "SystemButtonFace"
+
     def _build_clock_display(self) -> None:
         """Build analog or digital clock display in row 1."""
+        bg = self._theme_bg()
         if self._use_digital:
-            try:
-                bg = self.cget("background")
-            except tk.TclError:
-                bg = "SystemButtonFace"
             self._time_label = tk.Label(
                 self,
                 text="00:00:00",
@@ -507,7 +530,9 @@ class Clock(ttk.Frame):
             )
             self._time_label.grid(row=1, column=0, sticky="nsew")
         else:
-            self._clock_canvas = tk.Canvas(self, highlightthickness=0)
+            self._clock_canvas = tk.Canvas(
+                self, highlightthickness=0, bg=bg,
+            )
             self._clock_canvas.grid(row=1, column=0, sticky="nsew")
             self._clock_canvas.bind("<Configure>", self._on_canvas_configure)
             self._clock_canvas.bind("<Button-1>", self._on_canvas_click)
@@ -526,9 +551,14 @@ class Clock(ttk.Frame):
         radius, center_x, center_y = self._get_clock_dimensions()
         if not HAS_PIL:
             self._clock_canvas.delete("all")
+            fill_color = (
+                self.parent.get_theme_colors()[1]
+                if hasattr(self.parent, "get_theme_colors")
+                else "gray"
+            )
             self._clock_canvas.create_text(
                 center_x, center_y,
-                text=t("clock.pillow_required"), fill="gray"
+                text=t("clock.pillow_required"), fill=fill_color,
             )
             return
         if "face" not in self._hand_images or self._hand_images["face"] is None:
@@ -587,16 +617,19 @@ class Clock(ttk.Frame):
             sec_angle = min_angle = hr_angle = 0
         for name, angle in [("hour", hr_angle), ("minute", min_angle), ("second", sec_angle)]:
             rot_add = self._element_rotation_override.get(name, 0)
-            photo = self._rotated_hand(name, angle + rot_add, radius)
-            if photo:
-                refs_list.append(photo)
-                px, py = center_x, center_y
-                if name in self._element_offsets:
-                    dx, dy = self._element_offsets[name]
-                    px, py = center_x + dx, center_y + dy
-                self._clock_canvas.create_image(
-                    px, py, image=photo, anchor=tk.CENTER, tags=("hands", name)
-                )
+            result = self._rotated_hand(name, angle + rot_add, radius)
+            if result is None:
+                continue
+            photo, pivot_out_x, pivot_out_y = result
+            refs_list.append(photo)
+            px, py = center_x, center_y
+            if name in self._element_offsets:
+                dx, dy = self._element_offsets[name]
+                px, py = center_x + dx, center_y + dy
+            self._clock_canvas.create_image(
+                px - pivot_out_x, py - pivot_out_y,
+                image=photo, anchor=tk.NW, tags=("hands", name)
+            )
         if refs_owned:
             self._photo_refs[:] = refs_list
 

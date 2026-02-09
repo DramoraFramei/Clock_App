@@ -57,6 +57,9 @@ class ClockApp(tk.Tk):
         self._console_expanded = False
         self.current_menu: str = ""
         self._update_check_scheduled: str | None = None
+        self._theme_bg = "#f0f0f0"
+        self._theme_fg = "#000000"
+        self._theme_dark = False
         self.loading = Loading(self)
         self.loading.grid(row=0, column=0, sticky="nsew")
         self.current_menu = "loading"
@@ -92,9 +95,63 @@ class ClockApp(tk.Tk):
     def _switch_to_main(self) -> None:
         """Hide loading screen and show Main Menu."""
         self.loading.grid_forget()
+        self._apply_theme_from_config()
         self.switch_menu("main")
         self._setup_console()
         self._schedule_auto_update()
+
+    def _apply_theme_from_config(self) -> None:
+        """Read theme from clock_app.ini and apply it."""
+        from .imports import CLOCK_APP_INI_PATH
+        theme = "Light"
+        if os.path.exists(CLOCK_APP_INI_PATH):
+            cfg = configparser.ConfigParser()
+            cfg.optionxform = str
+            cfg.read(CLOCK_APP_INI_PATH, encoding="utf-8")
+            if cfg.has_section("-S- Display") and cfg.has_option("-S- Display", "D.app_theme"):
+                theme = cfg.get("-S- Display", "D.app_theme").strip() or theme
+        self.apply_theme(theme)
+
+    def apply_theme(self, theme_name: str) -> None:
+        """Only invert colors: set bg/fg on root and ttk. Layout and theme are unchanged."""
+        name = (theme_name or "Light").strip()
+        is_dark = name.lower() == "dark"
+        style = ttk.Style()
+        # Do not call theme_use() - keep current theme so layout (padding, sizes) is unchanged
+        if is_dark:
+            bg, fg = "#2b2b2b", "#e0e0e0"
+        else:
+            bg, fg = "#f0f0f0", "#000000"
+        self._theme_bg, self._theme_fg = bg, fg
+        self._theme_dark = is_dark
+        self.configure(bg=bg)
+        style.configure(".", background=bg, foreground=fg)
+        style.configure("TFrame", background=bg)
+        style.configure("TLabel", background=bg, foreground=fg)
+        style.configure("TButton", background=bg, foreground=fg)
+        style.configure("TLabelframe", background=bg, foreground=fg)
+        style.configure("TLabelframe.Label", background=bg, foreground=fg)
+        style.configure("TCheckbutton", background=bg, foreground=fg)
+        style.configure("TCombobox", fieldbackground=bg,
+                        foreground=fg, background=bg)
+        self._refresh_theme_colors()
+
+    def get_theme_colors(self) -> tuple[str, str]:
+        """Return (background, foreground) for the current theme."""
+        return (
+            getattr(self, "_theme_bg", "#f0f0f0"),
+            getattr(self, "_theme_fg", "#000000"),
+        )
+
+    def get_theme_comment_fg(self) -> str:
+        """Return foreground color for comment/secondary text (theme-aware)."""
+        return "#888888" if getattr(self, "_theme_dark", False) else "gray"
+
+    def _refresh_theme_colors(self) -> None:
+        """Notify all menus to apply current theme colors (bg/fg only)."""
+        for widget in (self.loading, self.main_menu, self.options, self.clock, self.console):
+            if widget is not None and hasattr(widget, "refresh_theme_colors"):
+                widget.refresh_theme_colors()
 
     def _setup_console(self) -> None:
         """Create console and bind ~ / ` to toggle."""
@@ -189,7 +246,8 @@ class ClockApp(tk.Tk):
         if result.error:
             messagebox.showwarning(
                 t("update.error_title", "Update Check"),
-                t("update.error_message", "Could not check for updates: {error}", error=result.error),
+                t("update.error_message",
+                  "Could not check for updates: {error}", error=result.error),
             )
             return
         # Only show update popup if notifications are on, or if manual check
@@ -213,7 +271,8 @@ class ClockApp(tk.Tk):
         elif show_no_update:
             messagebox.showinfo(
                 t("update.up_to_date_title", "Up to Date"),
-                t("update.up_to_date_message", "You have the latest version ({version}).", version=result.current_version),
+                t("update.up_to_date_message",
+                  "You have the latest version ({version}).", version=result.current_version),
             )
 
     def _schedule_auto_update(self) -> None:

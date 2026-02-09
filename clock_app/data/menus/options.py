@@ -82,6 +82,7 @@ class Options(ttk.Frame):
         self.config.read(CLOCK_APP_INI_PATH, encoding="utf-8")
         self._ini_path = CLOCK_APP_INI_PATH
         self._widget_vars: dict[str, tk.Variable] = {}
+        self._theme_comment_labels: list[tk.Label] = []
         self._build_ui()
 
     def _build_ui(self) -> None:
@@ -156,6 +157,7 @@ class Options(ttk.Frame):
 
     def _populate_options(self) -> None:
         """Populate the scroll frame with options from each section."""
+        self._theme_comment_labels = []
         row = 0
         section_order = [
             "-C- App Info", "-C- App Settings",
@@ -197,9 +199,23 @@ class Options(ttk.Frame):
         var_key = f"{section}::{opt_name}"
         if widget_var == "C":
             comment_text = t(f"ini.comment.{opt_name}", value)
-            ttk.Label(parent, text=comment_text, foreground="gray").grid(
-                row=row, column=0, columnspan=2, sticky="w", padx=5, pady=2
+            comment_fg = (
+                self.parent.get_theme_comment_fg()
+                if hasattr(self.parent, "get_theme_comment_fg")
+                else "gray"
             )
+            bg = (
+                self.parent.get_theme_colors()[0]
+                if hasattr(self.parent, "get_theme_colors")
+                else "SystemButtonFace"
+            )
+            lbl = tk.Label(
+                parent, text=comment_text, fg=comment_fg, bg=bg,
+            )
+            lbl.grid(row=row, column=0, columnspan=2,
+                     sticky="w", padx=5, pady=2)
+            if hasattr(self, "_theme_comment_labels"):
+                self._theme_comment_labels.append(lbl)
             return row + 1
         opt_label = t(f"ini.opt.{opt_name}",
                       opt_name.replace("_", " ").title())
@@ -301,6 +317,26 @@ class Options(ttk.Frame):
             self.config.write(f)
         if full_key == "D.app_language":
             self._on_language_changed(value)
+        elif full_key == "D.app_theme":
+            parent = getattr(self, "parent", None)
+            if parent and hasattr(parent, "apply_theme"):
+                parent.apply_theme(value)
+
+    def refresh_theme_colors(self) -> None:
+        """Apply current app theme colors (bg/fg only)."""
+        if not hasattr(self.parent, "get_theme_colors"):
+            return
+        bg, _fg = self.parent.get_theme_colors()
+        comment_fg = (
+            self.parent.get_theme_comment_fg()
+            if hasattr(self.parent, "get_theme_comment_fg")
+            else "gray"
+        )
+        for lbl in getattr(self, "_theme_comment_labels", []):
+            if lbl.winfo_exists():
+                lbl.configure(bg=bg, fg=comment_fg)
+        if hasattr(self, "_scroll_canvas") and self._scroll_canvas.winfo_exists():
+            self._scroll_canvas.configure(bg=bg)
 
     def _on_language_changed(self, lang_name: str) -> None:
         """Reload translations and refresh all UI when language changes."""

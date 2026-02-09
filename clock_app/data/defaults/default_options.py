@@ -92,7 +92,7 @@ class DefaultOptions(configparser.ConfigParser):
 
         # --- Display ---
         self.widget_variables_list["C"]["supported_themes"] = ["Light", "Dark"]
-        self.widget_variables_list["T"]["app_theme"] = "Light"
+        self.widget_variables_list["D"]["app_theme"] = "Dark"
         self.widget_variables_list["C"]["supported_timezones"] = [
             "UTC", "GMT", "EST", "CST", "MST", "PST", "etc."
         ]
@@ -118,12 +118,6 @@ class DefaultOptions(configparser.ConfigParser):
         ]
 
         # --- Behavior ---
-        self.widget_variables_list["C"]["supported_clock_animations"] = [
-            "On", "Off"]
-        self.widget_variables_list["T"]["app_clock_animation"] = "On"
-        self.widget_variables_list["C"]["supported_clock_types"] = [
-            "Analog", "Digital"]
-        self.widget_variables_list["D"]["app_clock_type"] = "Analog"
         self.widget_variables_list["C"]["supported_clock_colors"] = [
             "Red", "Green", "Blue", "Yellow", "Purple", "Orange",
             "Pink", "Brown", "Gray", "Black", "White"
@@ -196,7 +190,7 @@ class DefaultOptions(configparser.ConfigParser):
             ("C", "supported_languages"), ("D", "app_language"),
         )
         self.display_category = _gather_options(
-            ("C", "supported_themes"), ("T", "app_theme"),
+            ("C", "supported_themes"), ("D", "app_theme"),
             ("C", "supported_timezones"), ("D", "app_timezone"),
             ("C", "supported_time_separators"), ("D", "app_time_separator"),
             ("C", "supported_date_separators"), ("D", "app_date_separator"),
@@ -204,8 +198,6 @@ class DefaultOptions(configparser.ConfigParser):
             ("E", "app_date_format"), ("C", "supported_date_formats"),
         )
         self.behavior_category = _gather_options(
-            ("C", "supported_clock_animations"), ("T", "app_clock_animation"),
-            ("C", "supported_clock_types"), ("D", "app_clock_type"),
             ("C", "supported_clock_colors"), ("D", "app_clock_color"),
             ("C", "supported_clock_fonts"), ("D", "app_clock_font"),
             ("C", "supported_clock_font_sizes"), ("N", "app_clock_font_size"),

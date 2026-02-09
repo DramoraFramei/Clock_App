@@ -33,16 +33,23 @@ class Loading(ttk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self._build_ui()
 
+    def _theme_colors(self) -> tuple[str, str]:
+        """Current theme (bg, fg). Uses parent.get_theme_colors() if available."""
+        if hasattr(self.parent, "get_theme_colors"):
+            return self.parent.get_theme_colors()
+        return "#f0f0f0", "#000000"
+
     def _build_ui(self) -> None:
         """Build loading screen UI."""
-        self._container = tk.Frame(self, bg="black")
+        bg, fg = self._theme_colors()
+        self._container = tk.Frame(self, bg=bg)
         self._container.grid(row=0, column=0, sticky="nsew")
         self._container.grid_rowconfigure(0, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
         self._container.grid_rowconfigure(2, weight=1)
         self._container.grid_columnconfigure(0, weight=1)
 
-        self._inner = tk.Frame(self._container, bg="black")
+        self._inner = tk.Frame(self._container, bg=bg)
         self._inner.grid(row=0, column=0)
         self._inner.grid_rowconfigure(2, weight=1)
         self._inner.grid_columnconfigure(0, weight=1)
@@ -51,8 +58,8 @@ class Loading(ttk.Frame):
             self._inner,
             text=t("loading.text"),
             font=("", 14),
-            fg="white",
-            bg="black",
+            fg=fg,
+            bg=bg,
         )
         self._loading_label.grid(row=0, column=0, pady=(40, 20))
 
@@ -60,7 +67,7 @@ class Loading(ttk.Frame):
             self._inner,
             width=self.BAR_WIDTH,
             height=self.BAR_HEIGHT,
-            bg="black",
+            bg=bg,
             highlightthickness=0,
         )
         self._progress_canvas.grid(row=1, column=0, pady=10)
@@ -73,6 +80,14 @@ class Loading(ttk.Frame):
             0, 0, 0, self.BAR_HEIGHT,
             fill="green", outline="green"
         )
+
+    def refresh_theme_colors(self) -> None:
+        """Apply current app theme colors (bg/fg only)."""
+        bg, fg = self._theme_colors()
+        self._container.configure(bg=bg)
+        self._inner.configure(bg=bg)
+        self._loading_label.configure(bg=bg, fg=fg)
+        self._progress_canvas.configure(bg=bg)
 
     def refresh_translations(self) -> None:
         """Update labels with current language."""

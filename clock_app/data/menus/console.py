@@ -70,13 +70,20 @@ class Console(ttk.Frame):
         self.parent = parent
         self._build_ui()
 
+    def _theme_colors(self) -> tuple[str, str]:
+        """Current theme (bg, fg). Uses parent.get_theme_colors() if available."""
+        if hasattr(self.parent, "get_theme_colors"):
+            return self.parent.get_theme_colors()
+        return "#f0f0f0", "#000000"
+
     def _build_ui(self) -> None:
         """Build console input area."""
         self.grid_columnconfigure(0, weight=1)
+        bg, fg = self._theme_colors()
         self._output = tk.Text(
             self, height=4, wrap=tk.WORD, state=tk.DISABLED,
-            font=("Consolas", 9), bg="#1e1e1e", fg="#d4d4d4",
-            insertbackground="#d4d4d4"
+            font=("Consolas", 9), bg=bg, fg=fg,
+            insertbackground=fg,
         )
         self._output.grid(row=0, column=0, sticky="ew", padx=5, pady=5)
         self.entry = ttk.Entry(self, font=("Consolas", 10))
@@ -87,6 +94,11 @@ class Console(ttk.Frame):
         self.entry.bind("<Escape>", self._on_escape)
         self.entry.bind("<Up>", self._on_history_up)
         self.entry.bind("<Down>", self._on_history_down)
+
+    def refresh_theme_colors(self) -> None:
+        """Apply current app theme colors (bg/fg only)."""
+        bg, fg = self._theme_colors()
+        self._output.configure(bg=bg, fg=fg, insertbackground=fg)
 
     def _on_escape(self, _event: tk.Event) -> None:
         """Escape: collapse if expanded, close if collapsed."""

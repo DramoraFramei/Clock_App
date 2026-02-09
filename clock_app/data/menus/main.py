@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long,unused-import
+# pylint: disable=line-too-long,unused-import,too-many-ancestors
 """
 Main Menu for Clock App.
 """
@@ -9,10 +9,10 @@ import tkinter as tk
 from tkinter import ttk
 from typing import TYPE_CHECKING, Any
 
+from ...assets.lib.lang.translator import t
+
 if TYPE_CHECKING:
     from ...imports import ClockApp
-
-from ...assets.lib.lang.translator import t
 
 
 class MainMenu(ttk.Frame):
@@ -43,6 +43,9 @@ class MainMenu(ttk.Frame):
         self.exit_button = ttk.Button(
             self, text=t("main_menu.exit"), command=self.parent.quit)
         self.exit_button.grid(row=5, column=0, pady=5)
+
+    def refresh_theme_colors(self) -> None:
+        """Apply current app theme (MainMenu uses ttk, so colors come from style)."""
 
     def refresh_translations(self) -> None:
         """Update labels and buttons with current language."""

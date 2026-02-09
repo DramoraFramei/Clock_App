@@ -40,7 +40,7 @@ _INI_LAYOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
         ("C", "supported_languages"), ("D", "app_language"),
     )),
     ("-S- Display", (
-        ("C", "supported_themes"), ("T", "app_theme"),
+        ("C", "supported_themes"), ("D", "app_theme"),
         ("C", "supported_timezones"), ("D", "app_timezone"),
         ("C", "supported_time_separators"), ("D", "app_time_separator"),
         ("C", "supported_date_separators"), ("D", "app_date_separator"),
