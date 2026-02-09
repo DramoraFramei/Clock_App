@@ -118,6 +118,12 @@ class DefaultOptions(configparser.ConfigParser):
         ]
 
         # --- Behavior ---
+        self.widget_variables_list["C"]["supported_clock_animations"] = [
+            "On", "Off"]
+        self.widget_variables_list["T"]["app_clock_animation"] = "On"
+        self.widget_variables_list["C"]["supported_clock_types"] = [
+            "Analog", "Digital"]
+        self.widget_variables_list["D"]["app_clock_type"] = "Analog"
         self.widget_variables_list["C"]["supported_clock_colors"] = [
             "Red", "Green", "Blue", "Yellow", "Purple", "Orange",
             "Pink", "Brown", "Gray", "Black", "White"
@@ -182,7 +188,8 @@ class DefaultOptions(configparser.ConfigParser):
             ("C", "app_info_comment"), ("L", "app_name"), ("L", "app_version"),
             ("L", "app_version_type"), ("L", "app_description"), ("L", "app_author"),
             ("L", "app_author_github_username"), ("L", "app_github_url"),
-            ("L", "app_license"), ("L", "app_license_filename"), ("L", "app_license_url"),
+            ("L", "app_license"), ("L",
+                                   "app_license_filename"), ("L", "app_license_url"),
             ("L", "app_steam_id"), ("C", "steam_id_comment"),
         )
         self.general_category = _gather_options(
@@ -197,6 +204,8 @@ class DefaultOptions(configparser.ConfigParser):
             ("E", "app_date_format"), ("C", "supported_date_formats"),
         )
         self.behavior_category = _gather_options(
+            ("C", "supported_clock_animations"), ("T", "app_clock_animation"),
+            ("C", "supported_clock_types"), ("D", "app_clock_type"),
             ("C", "supported_clock_colors"), ("D", "app_clock_color"),
             ("C", "supported_clock_fonts"), ("D", "app_clock_font"),
             ("C", "supported_clock_font_sizes"), ("N", "app_clock_font_size"),
@@ -208,7 +217,8 @@ class DefaultOptions(configparser.ConfigParser):
         self.updates_category = _gather_options(
             ("C", "supported_update_options"), ("D", "app_update_option"),
             ("C", "supported_update_channels"), ("D", "app_update_channel"),
-            ("C", "supported_update_check_frequencies"), ("D", "app_update_check_frequency"),
+            ("C", "supported_update_check_frequencies"), ("D",
+                                                          "app_update_check_frequency"),
             ("C", "update_check_time_comment"), ("L", "app_update_check_time"),
             ("C", "supported_update_sources"), ("D", "app_update_source"),
             ("C", "update_comment"),

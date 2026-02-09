@@ -49,6 +49,8 @@ def _get_supported_list(config: configparser.ConfigParser, section: str, option:
         expected_suffix = stem.replace("_type", "_types")
     elif stem.endswith("_option"):
         expected_suffix = stem.replace("_option", "_options")
+    elif stem.endswith("_frequency"):
+        expected_suffix = stem.replace("_frequency", "_frequencies")
     else:
         expected_suffix = stem + "s"
     target = f"supported_{expected_suffix}"

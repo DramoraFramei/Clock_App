@@ -11,7 +11,8 @@ from typing import Any
 
 from ..defaults.default_options import DefaultOptions
 
-_APP_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_APP_ROOT = os.path.dirname(os.path.dirname(
+    os.path.dirname(os.path.abspath(__file__))))
 CLOCK_APP_INI_PATH: str = os.path.join(_APP_ROOT, "config", "clock_app.ini")
 
 
@@ -47,6 +48,8 @@ _INI_LAYOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
         ("C", "supported_date_formats"), ("E", "app_date_format"),
     )),
     ("-S- Behavior", (
+        ("C", "supported_clock_animations"), ("D", "app_clock_animation"),
+        ("C", "supported_clock_types"), ("D", "app_clock_type"),
         ("C", "supported_clock_colors"), ("D", "app_clock_color"),
         ("C", "supported_clock_fonts"), ("D", "app_clock_font"),
         ("C", "supported_clock_font_sizes"), ("N", "app_clock_font_size"),
@@ -58,7 +61,8 @@ _INI_LAYOUT: tuple[tuple[str, tuple[tuple[str, str], ...]], ...] = (
     ("-S- Updates", (
         ("C", "supported_update_options"), ("D", "app_update_option"),
         ("C", "supported_update_channels"), ("D", "app_update_channel"),
-        ("C", "supported_update_check_frequencies"), ("D", "app_update_check_frequency"),
+        ("C", "supported_update_check_frequencies"), ("D",
+                                                      "app_update_check_frequency"),
         ("C", "update_check_time_comment"), ("L", "app_update_check_time"),
         ("C", "supported_update_sources"), ("D", "app_update_source"),
         ("C", "update_comment"),
